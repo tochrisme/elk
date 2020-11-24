@@ -1,0 +1,31 @@
+ks create ns elk
+
+ks config set-context elk --namespace=elk --cluster=docker-desktop --user=docker-desktop
+
+
+ks config set-context elastic --namespace=elk --cluster=docker-desktop --user=docker-desktop
+
+//Create a cluster level role binding so that you can deploy kube-state-metrics and the Beats at the cluster level (in kube-system).
+kubectl create clusterrolebinding cluster-admin-binding  --clusterrole=cluster-admin --user=docker-desktop
+
+
+//Install kube-state-metrics
+git clone https://github.com/kubernetes/kube-state-metrics.git kube-state-metrics
+
+kubectl apply -f kube-state-metrics/examples/standard
+kubectl get pods --namespace=kube-system -l app.kubernetes.io/name=kube-state-metrics
+
+
+
+git clone https://github.com/elastic/examples.git
+
+
+Helm repo add elastic https://Helm.elastic.co
+
+Helm install elasticsearch elastic/elasticsearch -f ./values.yaml 
+
+helm test elasticsearch
+
+kubectl port-forward service/kibana-sample-kb-http 5601
+
+echo `kubectl get secret elasticsearch-sample-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode`
